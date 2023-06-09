@@ -1,6 +1,9 @@
 const express = require('express')
+const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const app = express()
+
+app.use(bodyParser.json());
 
 // Conexión a la base de datos utilizando MySQL
 
@@ -23,35 +26,37 @@ connection.connect((err) => {
 
 // GET /receta/{id}
 app.get('/receta/:id', (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
 
   let query = 'SELECT * FROM receta WHERE id = ?';
   let values = [id];
 
   connection.query(query, values, (err, results) => {
+    if (err) {
+      // Handle the error
+      console.error('Error executing the query:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
     if (results.length === 0) {
-      // Tabla existe, no tiene datos
-      res.status(200).json({ message: 'No hay datos en la tabla o campo' }); 
+      // Table exists, but no data found
+      res.status(200).json({ message: 'No hay datos en la tabla o campo' });
       return;
     }
 
-    if (results.length > 0) { 
-      // Tabla existe, tiene datos
-      res.status(200).json({ message: 'OK' });
-      return;
-    }
-
-    res.status(404).json({ error: 'No se encontro la tabla o campo' });
+    // Table exists and has data
+    res.status(200).json({ data: results });
   });
 });
 
 // PATCH /receta/{id}
 app.patch('/receta/:id', (req, res) => {
   const { id } = req.params;
-  const updates = req.body;
+  const { pasos } = req.body;
 
-  let query = 'UPDATE receta SET ? WHERE id = ?';
-  let values = [updates, id];
+  let query = 'UPDATE receta SET pasos = ? WHERE id = ?';
+  let values = [pasos, id];
 
   connection.query(query, values, (err, results) => {
     if (err) {
@@ -96,6 +101,29 @@ app.delete('/receta/:id', (req, res) => {
   });
 });
 
+// GET /receta
+app.get('/receta', (req, res) => {
+  let query = 'SELECT * FROM receta';
+
+  connection.query(query, (err, results) => {
+    if (err) {
+      // Handle the error
+      console.error('Error executing the query:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
+    if (results.length === 0) {
+      // Table exists, but no data found
+      res.status(200).json({ message: 'No hay datos en la tabla o campo' });
+      return;
+    }
+
+    // Table exists and has data
+    res.status(200).json({ data: results });
+  });
+});
+
 // POST /receta
 app.post('/receta', (req, res) => {
   const { nombre, tiempo, tipo, pasos } = req.body;
@@ -133,73 +161,132 @@ app.post('/receta', (req, res) => {
 
 // GET /ingrediente/{id}
 app.get('/ingrediente/:id', (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
 
   let query = 'SELECT * FROM ingrediente WHERE id = ?';
   let values = [id];
 
   connection.query(query, values, (err, results) => {
+    if (err) {
+      // Handle the error
+      console.error('Error executing the query:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
     if (results.length === 0) {
-      // Tabla existe, no tiene datos
-      res.status(200).json({ message: 'No hay datos en la tabla o campo' }); 
+      // Table exists, but no data found
+      res.status(200).json({ message: 'No hay datos en la tabla o campo' });
       return;
     }
 
-    if (results.length > 0) { 
-      // Tabla existe, tiene datos
-      res.status(200).json({ message: 'OK' });
-      return;
-    }
-
-    res.status(404).json({ error: 'No se encontro la tabla o campo' });
+    // Table exists and has data
+    res.status(200).json({ data: results });
   });
 });
 
 // GET /ingrediente
 app.get('/ingrediente', (req, res) => {
-
   let query = 'SELECT * FROM ingrediente';
 
   connection.query(query, (err, results) => {
+    if (err) {
+      // Handle the error
+      console.error('Error executing the query:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
     if (results.length === 0) {
-      // Tabla existe, no tiene datos
-      res.status(200).json({ message: 'No hay datos en la tabla o campo' }); 
+      // Table exists, but no data found
+      res.status(200).json({ message: 'No hay datos en la tabla o campo' });
       return;
     }
 
-    if (results.length > 0) { 
-      // Tabla existe, tiene datos
-      res.status(200).json({ message: 'OK' });
-      return;
-    }
-
-    res.status(404).json({ error: 'No se encontro la tabla o campo' });
+    // Table exists and has data
+    res.status(200).json({ data: results });
   });
 });
 
 // POST /ingrediente
+app.post('/ingrediente', (req, res) => {
+  const { nombre, medida } = req.body;
 
-// GET /proporcion/{id}
-app.get('/proporcion/:id', (req, res) => {
-  const {id} = req.params;
+  // Mini validación
+  if (!nombre || !medida) {
+    res.status(400).json({ error: 'Faltan campos correspondientes' });
+    return;
+  }
 
-  let query = 'SELECT * FROM proporcion WHERE id = ?';
+  let query = 'INSERT INTO receta (nombre, medida) VALUES (?, ?)';
+  let values = [nombre, medida];
+
+  connection.query(query, values, (err, results) => {
+    if (err) {
+      // Handle the database error
+      res.status(500).json({ error: 'Error al insertar el registro en la tabla' });
+      return;
+    }
+
+    if (results.affectedRows === 1) {
+      // Record inserted successfully
+      res.status(201).json({ message: 'Registro insertado correctamente' });
+    } else {
+      // Failed to insert the record
+      res.status(500).json({ error: 'Error al insertar el registro en la tabla' });
+    }
+  });
+});
+
+// GET /proporcion/ingrediente/{id}
+app.get('/proporcion/ingrediente/:id', (req, res) => {
+  const { id } = req.params;
+
+  let query = 'SELECT * FROM proporcion WHERE ingrediente_id = ?';
   let values = [id];
 
   connection.query(query, values, (err, results) => {
+    if (err) {
+      // Handle the error
+      console.error('Error executing the query:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
     if (results.length === 0) {
-      // Tabla existe, no tiene datos
-      res.status(200).json({ message: 'No hay datos en la tabla o campo' }); 
+      // Table exists, but no data found
+      res.status(200).json({ message: 'No hay datos en la tabla o campo' });
       return;
     }
 
-    if (results.length > 0) { 
-      // Tabla existe, tiene datos
-      res.status(200).json({ message: 'OK' });
+    // Table exists and has data
+    res.status(200).json({ data: results });
+  });
+});
+
+// GET /proporcion/receta/{id}
+app.get('/proporcion/receta/:id', (req, res) => {
+  const { id } = req.params;
+
+  let query = 'SELECT * FROM proporcion WHERE receta_id = ?';
+  let values = [id];
+
+  connection.query(query, values, (err, results) => {
+    if (err) {
+      // Handle the error
+      console.error('Error executing the query:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
       return;
     }
 
-    res.status(404).json({ error: 'No se encontro la tabla o campo' });
+    if (results.length === 0) {
+      // Table exists, but no data found
+      res.status(200).json({ message: 'No hay datos en la tabla o campo' });
+      return;
+    }
+
+    // Table exists and has data
+    res.status(200).json({ data: results });
   });
 });
 
@@ -207,20 +294,22 @@ app.get('/proporcion/:id', (req, res) => {
 app.get('/proporcion', (req, res) => {
   let query = 'SELECT * FROM proporcion';
 
-  connection.query(query, values, (err, results) => {
+  connection.query(query, (err, results) => {
+    if (err) {
+      // Handle the error
+      console.error('Error executing the query:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
     if (results.length === 0) {
-      // Tabla existe, no tiene datos
-      res.status(200).json({ message: 'No hay datos en la tabla o campo' }); 
+      // Table exists, but no data found
+      res.status(200).json({ message: 'No hay datos en la tabla o campo' });
       return;
     }
 
-    if (results.length > 0) { 
-      // Tabla existe, tiene datos
-      res.status(200).json({ message: 'OK' });
-      return;
-    }
-
-    res.status(404).json({ error: 'No se encontro la tabla o campo' });
+    // Table exists and has data
+    res.status(200).json({ data: results });
   });
 });
 
