@@ -1,38 +1,102 @@
 .App {
+  font-family: Arial, sans-serif;
   text-align: center;
 }
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body {
+  background-color: #c2e8c2;
+}
+header {
+  background-color: #333;
+  color: #fff;
+  padding: 20px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+h1 {
+  margin: 0;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+main {
+  padding: 20px;
+}
+
+.lista-recetas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.receta {
+  width: 250px;
+  background-color: #f1f1f1;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.receta h3 {
+  margin-top: 0;
+}
+
+.receta button {
+  margin-top: 10px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.receta button:hover {
+  background-color: #555;
+}
+
+.formulario-receta {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.formulario-receta h2 {
+  margin-bottom: 10px;
+}
+
+.formulario-receta form {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+}
+
+.formulario-receta label {
+  margin-bottom: 5px;
+}
+
+.formulario-receta input[type="text"] {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.formulario-receta div {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  margin-bottom: 5px;
 }
 
-.App-link {
-  color: #61dafb;
+.formulario-receta input[type="checkbox"] {
+  margin-right: 5px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.formulario-receta button {
+  margin-top: 10px;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.formulario-receta button:hover {
+  background-color: #555;
 }
