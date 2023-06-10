@@ -333,4 +333,4 @@ app.post('/proporcion', (req, res) => {
 });
 
 
- app.listen(3000, () => {console.log("Server iniciado en 3000")})
+app.listen(3000, () => {console.log("Server iniciado en 3000")})
